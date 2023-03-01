@@ -65,7 +65,7 @@ parser.add_argument('--weight-decay', '--wd', default=5e-4, type=float,
                     metavar='W', help='weight decay (default: 5e-4)')
 parser.add_argument('--print-freq', default=50, type=int,
                     metavar='N', help='print frequency (default: 50)')
-parser.add_argument('--save-freq', default=25, type=int,
+parser.add_argument('--save-freq', default=1, type=int,
                     metavar='N', help='save frequency (default: 25)')
 parser.add_argument('--resume', default='./checkpoints', type=str, metavar='PATH',
                     help='path to latest checkpoint (default: none)')
@@ -219,8 +219,8 @@ def train(train_loader, model, criterion, optimizer, epoch):
 
     for i, (input, target) in enumerate(train_loader):
 
-        input = input.float().cuda(async=True)
-        target = target.cuda(async=True)
+        input = input.float().cuda()
+        target = target.cuda()
         input_var = torch.autograd.Variable(input)
         target_var = torch.autograd.Variable(target)
 
@@ -228,10 +228,10 @@ def train(train_loader, model, criterion, optimizer, epoch):
 
         # measure accuracy and record loss
         prec1, prec3 = accuracy(output.data, target, topk=(1, 3))
-        acc_mini_batch += prec1[0]
+        acc_mini_batch += prec1.item()
         loss = criterion(output, target_var)
         loss = loss / args.iter_size
-        loss_mini_batch += loss.data[0]
+        loss_mini_batch += loss.item()
         loss.backward()
 
         if (i+1) % args.iter_size == 0:
@@ -267,10 +267,10 @@ def validate(val_loader, model, criterion):
 
     end = time.time()
     for i, (input, target) in enumerate(val_loader):
-        input = input.float().cuda(async=True)
-        target = target.cuda(async=True)
-        input_var = torch.autograd.Variable(input, volatile=True)
-        target_var = torch.autograd.Variable(target, volatile=True)
+        input = input.float().cuda()
+        target = target.cuda()
+        input_var = torch.autograd.Variable(input)
+        target_var = torch.autograd.Variable(target)
 
         # compute output
         output = model(input_var)
@@ -278,9 +278,9 @@ def validate(val_loader, model, criterion):
 
         # measure accuracy and record loss
         prec1, prec3 = accuracy(output.data, target, topk=(1, 3))
-        losses.update(loss.data[0], input.size(0))
-        top1.update(prec1[0], input.size(0))
-        top3.update(prec3[0], input.size(0))
+        losses.update(loss.item(), input.size(0))
+        top1.update(prec1.item(), input.size(0))
+        top3.update(prec3.item(), input.size(0))
 
         # measure elapsed time
         batch_time.update(time.time() - end)
@@ -303,6 +303,7 @@ def validate(val_loader, model, criterion):
 def save_checkpoint(state, is_best, filename, resume_path):
     cur_path = os.path.join(resume_path, filename)
     best_path = os.path.join(resume_path, 'model_best.pth.tar')
+    print(cur_path)
     torch.save(state, cur_path)
     if is_best:
         shutil.copyfile(cur_path, best_path)
@@ -344,7 +345,7 @@ def accuracy(output, target, topk=(1,)):
 
     res = []
     for k in topk:
-        correct_k = correct[:k].view(-1).float().sum(0)
+        correct_k = correct[:k].contiguous().view(-1).float().sum(0)
         res.append(correct_k.mul_(100.0 / batch_size))
     return res
 
