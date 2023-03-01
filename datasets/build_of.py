@@ -25,8 +25,8 @@ def run_optical_flow(vid_item):
     flow_x_path = '{}/flow_x'.format(out_full_path)
     flow_y_path = '{}/flow_y'.format(out_full_path)
 
-    cmd = os.path.join(df_path + 'build/extract_gpu')+' -f {} -x {} -y {} -i {} -b 20 -t 1 -d {} -s 1 -o {} -w {} -h {}'.format(
-        quote(vid_path), quote(flow_x_path), quote(flow_y_path), quote(image_path), dev_id, out_format, new_size[0], new_size[1])
+    cmd = os.path.join(df_path)+' {} -b=20 -s=1 -nw={} -nh={} -o {}'.format(
+        quote(vid_path), new_size[0], new_size[1], out_full_path)
 
     os.system(cmd)
     print('{} {} done'.format(vid_id, vid_name))
@@ -71,5 +71,5 @@ if __name__ == '__main__':
     vid_list = glob.glob(src_path+'/*/*.'+ext)
     print(len(vid_list))
     pool = Pool(num_worker)
-    pool.map(run_optical_flow, zip(vid_list, xrange(len(vid_list))))
+    pool.map(run_optical_flow, zip(vid_list, range(len(vid_list))))
 
