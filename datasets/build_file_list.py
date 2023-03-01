@@ -45,7 +45,7 @@ def build_split_list(split_tuple, frame_info, split_idx, shuffle=False):
             rgb_cnt = frame_info[0][item[0]]
             flow_cnt = frame_info[1][item[0]]
             rgb_list.append('{} {} {}\n'.format(item[0], rgb_cnt-1, item[1]))
-            flow_list.append('{} {} {}\n'.format(item[0], flow_cnt, item[1]))
+            flow_list.append('{} {} {}\n'.format(item[0], flow_cnt-1, item[1]))
         if shuffle:
             random.shuffle(rgb_list)
             random.shuffle(flow_list)
