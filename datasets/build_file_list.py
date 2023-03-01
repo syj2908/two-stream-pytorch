@@ -44,7 +44,7 @@ def build_split_list(split_tuple, frame_info, split_idx, shuffle=False):
         for item in set_list:
             rgb_cnt = frame_info[0][item[0]]
             flow_cnt = frame_info[1][item[0]]
-            rgb_list.append('{} {} {}\n'.format(item[0], rgb_cnt, item[1]))
+            rgb_list.append('{} {} {}\n'.format(item[0], rgb_cnt-1, item[1]))
             flow_list.append('{} {} {}\n'.format(item[0], flow_cnt, item[1]))
         if shuffle:
             random.shuffle(rgb_list)
@@ -67,7 +67,7 @@ def parse_ucf101_splits():
         return vid, label
 
     splits = []
-    for i in xrange(1, 4):
+    for i in range(1, 4):
         train_list = [line2rec(x) for x in open('ucf101_splits/trainlist{:02d}.txt'.format(i))]
         test_list = [line2rec(x) for x in open('ucf101_splits/testlist{:02d}.txt'.format(i))]
         splits.append((train_list, test_list))
@@ -118,9 +118,9 @@ if __name__ == '__main__':
 
     parser.add_argument('--rgb_prefix', type=str, default='img_',
                         help="prefix of RGB frames")
-    parser.add_argument('--flow_x_prefix', type=str, default='flow_x',
+    parser.add_argument('--flow_x_prefix', type=str, default='flow_x_',
                         help="prefix of x direction flow images")
-    parser.add_argument('--flow_y_prefix', type=str, default='flow_y',
+    parser.add_argument('--flow_y_prefix', type=str, default='flow_y_',
                         help="prefix of y direction flow images", )
 
     parser.add_argument('--num_split', type=int, default=3,
@@ -152,7 +152,7 @@ if __name__ == '__main__':
     f_info = parse_directory(frame_path, rgb_p, flow_x_p, flow_y_p)
 
     print('writing list files for training/testing')
-    for i in xrange(max(num_split, len(split_tp))):
+    for i in range(max(num_split, len(split_tp))):
         lists = build_split_list(split_tp, f_info, i, shuffle)
         open(os.path.join(out_path, 'train_rgb_split{}.txt'.format(i + 1)), 'w').writelines(lists[0][0])
         open(os.path.join(out_path, 'val_rgb_split{}.txt'.format(i + 1)), 'w').writelines(lists[0][1])
